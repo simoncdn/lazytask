@@ -1,7 +1,7 @@
 use crate::components;
+use crate::models::Task;
 use std::io;
 
-use crossterm::event::KeyCode;
 use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Direction, Layout},
@@ -16,7 +16,7 @@ pub enum FocusedComponents {
 
 impl Default for FocusedComponents {
     fn default() -> Self {
-        Self::Home
+        Self::Tasks
     }
 }
 
@@ -42,9 +42,17 @@ impl FocusedComponents {
 pub struct App {
     pub exit: bool,
     pub focus: FocusedComponents,
+    pub tasks: Vec<Task>,
 }
 
 impl App {
+    pub fn new(tasks: Vec<Task>) -> Self {
+        return App {
+            tasks,
+            ..Default::default()
+        };
+    }
+
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
         while !self.exit {
             terminal.draw(|frame| self.view(frame))?;
@@ -60,7 +68,7 @@ impl App {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(frame.area());
 
-        components::main_layout::render(frame, layout[0], &self.focus);
+        components::main_layout::render(frame, layout[0], &self);
         components::help_bar::render(frame, layout[1]);
     }
 

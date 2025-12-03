@@ -7,9 +7,9 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
 };
 
-use crate::app::FocusedComponents;
+use crate::app::App;
 
-pub fn render(frame: &mut Frame, area: Rect, focus: &FocusedComponents) {
+pub fn render(frame: &mut Frame, area: Rect, app: &App) {
     let sidebar = Layout::default()
         .direction(Direction::Vertical)
         .constraints(vec![
@@ -19,7 +19,7 @@ pub fn render(frame: &mut Frame, area: Rect, focus: &FocusedComponents) {
         ])
         .split(area);
 
-    home::render(frame, sidebar[0], focus);
-    tasks::render(frame, sidebar[1], focus);
-    archived::render(frame, sidebar[2], focus);
+    home::render(frame, sidebar[0], app);
+    tasks::render(frame, sidebar[1], app);
+    archived::render(frame, sidebar[2], app);
 }
