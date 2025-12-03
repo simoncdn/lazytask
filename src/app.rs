@@ -1,14 +1,47 @@
 use crate::components;
 use std::io;
 
+use crossterm::event::KeyCode;
 use ratatui::{
     DefaultTerminal, Frame,
     layout::{Constraint, Direction, Layout},
 };
 
+#[derive(Debug)]
+pub enum FocusedComponents {
+    Home,
+    Tasks,
+    Archived,
+}
+
+impl Default for FocusedComponents {
+    fn default() -> Self {
+        Self::Home
+    }
+}
+
+impl FocusedComponents {
+    pub fn next(&self) -> Self {
+        match self {
+            Self::Home => Self::Tasks,
+            Self::Tasks => Self::Archived,
+            Self::Archived => Self::Home,
+        }
+    }
+
+    pub fn previous(&self) -> Self {
+        match self {
+            Self::Home => Self::Archived,
+            Self::Tasks => Self::Home,
+            Self::Archived => Self::Tasks,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct App {
     pub exit: bool,
+    pub focus: FocusedComponents,
 }
 
 impl App {
@@ -27,14 +60,21 @@ impl App {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(frame.area());
 
-        components::main_layout::render(frame, layout[0]);
+        components::main_layout::render(frame, layout[0], &self.focus);
         components::help_bar::render(frame, layout[1]);
     }
 
     fn handle_event(&mut self) {
         if let Ok(crossterm::event::Event::Key(key)) = crossterm::event::read() {
-            if key.code == crossterm::event::KeyCode::Char('q') {
-                self.exit = true;
+            match key.code {
+                crossterm::event::KeyCode::Char('q') => {
+                    self.exit = true;
+                }
+                crossterm::event::KeyCode::Tab => {
+                    self.focus = self.focus.next();
+                }
+                crossterm::event::KeyCode::BackTab => self.focus = self.focus.previous(),
+                _ => {}
             }
         }
     }
